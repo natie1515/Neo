@@ -11,34 +11,28 @@ export default {
 
         await m.react('🕒')
         try {
-            let media = await q.download()
+            const media = await q.download()
             const isAnimated = q.isAnimated || q.msg?.isAnimated
 
             if (isAnimated) {
-                // Intentamos convertir a video
-                try {
-                    // Usamos una API directa para evitar problemas de memoria en el contenedor
-                    let videoUrl = `https://api.lolhuman.xyz/api/convert/webptomp4?apikey=GataDios&img=${encodeURIComponent(media.toString('base64'))}`
-                    
-                    await client.sendMessage(m.chat, { 
-                        video: { url: videoUrl }, 
-                        caption: 'ꕥ *Aquí tienes tu video ฅ^•ﻌ•^ฅ*' 
-                    }, { quoted: m })
-                    await m.react('✔️')
-                } catch (err) {
-                    // Si el video falla, enviamos la imagen (fallback)
-                    await client.sendMessage(m.chat, { image: media, caption: '⚠️ *No pude procesar el video, pero aquí tienes la imagen:*' }, { quoted: m })
-                    await m.react('✔️')
-                }
+                // Conversión de Video
+                const videoUrl = await webp2mp4(media)
+                await client.sendMessage(m.chat, { 
+                    video: { url: videoUrl }, 
+                    caption: 'ꕥ *Aquí tienes tu video ฅ^•ﻌ•^ฅ*' 
+                }, { quoted: m })
             } else {
-                // Sticker estático
-                await client.sendMessage(m.chat, { image: media, caption: 'ꕥ *Aquí tienes tu imagen ฅ^•ﻌ•^ฅ*' }, { quoted: m })
-                await m.react('✔️')
+                // Imagen estática
+                await client.sendMessage(m.chat, { 
+                    image: media, 
+                    caption: 'ꕥ *Aquí tienes tu imagen ฅ^•ﻌ•^ฅ*' 
+                }, { quoted: m })
             }
+            await m.react('✔️')
         } catch (e) {
             console.error(e)
             await m.react('✖️')
-            client.reply(m.chat, `《✧》 Error crítico al descargar el sticker.`, m)
+            client.reply(m.chat, `《✧》 Error: No se pudo procesar el sticker animado. Intenta con otro más ligero.`, m)
         }
     }
 }

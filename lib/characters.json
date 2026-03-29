@@ -21582,6 +21582,13 @@
         "gender": "Mujer",
         "tags": ["jinx_(dc)"],
         "value": 7953
+      },
+      {
+         "id": "1200206",
+        "name": "Juliet Persia",
+        "gender": "Mujer",
+        "tags": ["juliet_persia"],
+        "value": 10000
       }
     ]
   }

@@ -7,16 +7,16 @@ function initDB(m, client) {
   settings.self ??= false
   settings.prefix ??= ['/', '!', '.', '#']
   settings.commandsejecut ??= isNumber(settings.commandsejecut) ? settings.commandsejecut : 0
-  settings.id ??= '120363401404146384@newsletter'
-  settings.nameid ??= "'ೃ࿔ ყµҡเ ωαɓσƭ'ร - σƒƒเ૮เαℓ ૮ɦαɳɳεℓ .ೃ࿐"
+  settings.id ??= '120363188537623366@newsletter'
+  settings.nameid ??= "✦͙͙͙͙❥⃝∗⁎.ʚ ʸᵘᵐᶦ-ᵖʳᵒʸᵉᶜᵗ ɞ.⁎∗❥⃝**͙✦͙͙͙"
   settings.type ??= 'Owner'
   settings.link ??= 'https://api.yuki-wabot.my.id'
-  settings.banner ??= 'https://cdn.yuki-wabot.my.id/files/tCVD.jpeg'
-  settings.icon ??= 'https://cdn.yuki-wabot.my.id/files/PJDp.jpeg'
+  settings.banner ??= 'https://cdn.nexylight.xyz/files/ud1mg7.jpeg'
+  settings.icon ??= 'https://cdn.nexylight.xyz/files/nxen0rzo.jpeg'
   settings.currency ??= 'Yenes'
-  settings.namebot ??= 'Yuki'
-  settings.botname ??= 'Yuki Suou'  
-  settings.owner ??= ''
+  settings.namebot ??= 'Nekotina'
+  settings.botname ??= 'Neko'  
+  settings.owner ??= 'ⁿᵏGwee⚝'
 
   const user = global.db.data.users[m.sender] ||= {}
   user.name ??= m.pushName

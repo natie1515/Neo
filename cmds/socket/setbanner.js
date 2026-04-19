@@ -1,5 +1,4 @@
 import fetch from 'node-fetch';
-import FormData from 'form-data';
 
 export default {
   command: ['setbanner', 'setbotbanner'],
@@ -13,67 +12,63 @@ export default {
     if (!isOwner2) return m.reply(mess.socket)
 
     const value = args.join(' ').trim()
-    let finalUrl = ''
+    let urlParaSubir = ''
 
-    // 1. Si el usuario proporciona una URL directa
+    // 1. Si el usuario pone una URL directa
     if (value.startsWith('http')) {
-      finalUrl = value
+      urlParaSubir = value
     } 
-    // 2. Si el usuario envía o cita un archivo multimedia
+    // 2. Si el usuario cita una imagen, primero necesitamos una URL temporal
+    // (Porque tu API de evogb pide una URL, no un archivo directo)
     else if (m.quoted || m.message.imageMessage || m.message.videoMessage) {
       const q = m.quoted ? m.quoted : m.message.imageMessage ? m : m
-      const mime = (q.msg || q).mimetype || q.mediaType || ''
-      
-      if (!/image\/(png|jpe?g|gif)|video\/mp4/.test(mime)) {
-        return m.reply('✎ Por favor, usa una imagen (jpg, png, gif) o video mp4.')
-      }
-
       const buffer = await q.download()
-      if (!buffer) return m.reply('✕ Error al descargar el archivo.')
-      
-      // Subida temporal para obtener una URL que la API de evogb pueda leer
-      finalUrl = await uploadToTemp(buffer, mime)
-    } 
-    else {
-      return m.reply('✎ Debes enviar/citar una imagen o poner una URL.')
+      // Usamos un convertidor rápido de buffer a URL (puedes usar el que ya tengas en tu bot)
+      urlParaSubir = await uploadToTelegraPh(buffer) 
+    } else {
+      return m.reply('✎ Debes proporcionar una URL o citar una imagen.')
     }
 
-    if (!finalUrl) return m.reply('✕ No se pudo obtener la URL del archivo.')
+    if (!urlParaSubir) return m.reply('✕ No se pudo procesar la imagen.')
 
-    // 3. Uso de tu API específica para establecer el banner
+    // 3. LA PARTE QUE SOLICITASTE: Subir a evogb.win vía URL
     try {
       const res = await fetch("https://evogb.win/api/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          url: finalUrl,
-          author: "ConsoleUser" // Puedes cambiar esto por el nombre de tu bot
+          url: urlParaSubir,
+          author: "ConsoleUser" 
         })
       })
 
       const data = await res.json()
 
-      if (data.result && data.result.url) {
+      // Verificamos si la respuesta fue exitosa según el formato de tu API
+      if (data.success && data.result?.url) {
         config.banner = data.result.url
-        return m.reply(`✿ ¡Banner actualizado correctamente!\n\n*Resultado:* ${data.result.url}`)
+        return m.reply(`✿ ¡Banner actualizado!\n\n${data.result.url}`)
       } else {
-        return m.reply('✕ La API no devolvió una URL válida.')
+        // Si falla, mostramos el error que da la API (como el de tu captura)
+        return m.reply(`✕ Error: ${data.message || 'No se pudo subir.'}`)
       }
     } catch (err) {
       console.error(err)
-      return m.reply('✕ Hubo un error al conectar con la API de subida.')
+      return m.reply('✕ Error al conectar con la API.')
     }
   },
 }
 
-// Función auxiliar para convertir el buffer en URL temporal si es necesario
-async function uploadToTemp(buffer, mime) {
+// Función auxiliar para obtener una URL si citan una imagen
+async function uploadToTelegraPh(buffer) {
   try {
+    const { fileTypeFromBuffer } = await import('file-type')
+    const { ext } = await fileTypeFromBuffer(buffer)
     const body = new FormData()
-    body.append('files[]', buffer, `file.${mime.split('/')[1]}`)
-    const res = await fetch('https://uguu.se/upload.php', { method: 'POST', body, headers: body.getHeaders() })
+    body.append('file', buffer, 'tmp.' + ext)
+    const res = await fetch('https://telegra.ph/upload', { method: 'POST', body })
     const json = await res.json()
-    return json.files?.[0]?.url
+    return 'https://telegra.ph' + json[0].src
   } catch {
     return null
   }

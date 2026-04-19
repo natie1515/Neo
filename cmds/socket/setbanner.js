@@ -16,8 +16,7 @@ export default {
       ...global.owner.map(num => num + '@s.whatsapp.net')
     ].includes(m.sender)
 
-    if (!isOwner2)
-      return m.reply(mess.socket)
+    if (!isOwner2) return m.reply(mess.socket)
 
     const value = args.join(' ').trim()
 
@@ -32,7 +31,7 @@ export default {
       )
     }
 
-    // Si mandan URL directa
+    // Si pasan una URL directa
     if (value.startsWith('http')) {
       config.banner = value
       return m.reply(
@@ -40,7 +39,7 @@ export default {
       )
     }
 
-    // Si responden/citan imagen
+    // Imagen citada
     const q = m.quoted || m
 
     const mime =
@@ -49,25 +48,19 @@ export default {
       ''
 
     if (!/image\/(png|jpe?g|gif)|video\/mp4/.test(mime)) {
-      return m.reply(
-        '✎ Responde a una imagen válida.'
-      )
+      return m.reply('✎ Responde a una imagen válida.')
     }
 
     const buffer = await q.download()
 
     if (!buffer) {
-      return m.reply(
-        '✕ No se pudo descargar la imagen.'
-      )
+      return m.reply('✕ No se pudo descargar la imagen.')
     }
 
     const url = await uploadImage(buffer, mime)
 
     if (!url) {
-      return m.reply(
-        '✕ Error subiendo imagen a evogb.'
-      )
+      return m.reply('✕ Error subiendo imagen a evogb.')
     }
 
     config.banner = url
@@ -79,15 +72,16 @@ export default {
 }
 
 
-// SUBIDA A EVOGB (PERMANENTE)
+
 async function uploadImage(buffer, mime) {
 
   try {
 
     const form = new FormData()
 
+    // IMPORTANTE: files[] y no file
     form.append(
-      'file',
+      'files[]',
       buffer,
       {
         filename: 'banner.' + mime.split('/')[1]
@@ -111,7 +105,8 @@ async function uploadImage(buffer, mime) {
 
     return json.result?.url || null
 
-  } catch (e) {
+  }
+  catch (e) {
 
     console.error(e)
 

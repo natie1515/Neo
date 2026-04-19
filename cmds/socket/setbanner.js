@@ -1,104 +1,73 @@
-import fetch from 'node-fetch'
-import FormData from 'form-data'
+import fetch from 'node-fetch';
+import FormData from 'form-data';
 
 export default {
-command: ['setbanner','setbotbanner'],
-category: 'socket',
+  command: ['setbanner', 'setmenubanner'],
+  category: 'socket',
+  run: async (client, m, args) => {
+    const idBot = client.user.id.split(':')[0] + '@s.whatsapp.net'
+    const config = global.db.data.settings[idBot]
+    const isOwner2 = [idBot, ...(config.owner ? [config.owner] : []), ...global.owner.map(num => num + '@s.whatsapp.net')].includes(m.sender)
+    if (!isOwner2) return m.reply(mess.socket)
+    const value = args.join(' ').trim()
+    
+    if (!value && !m.quoted && !m.message.imageMessage && !m.message.videoMessage)
+      return m.reply('✎ Debes enviar o citar una imagen o video para cambiar el banner del bot.')
 
-run: async (client,m,args) => {
+    // --- CONFIGURACIÓN DE API ---
+    const token = 'evogb-IOp2Gu7J' // <--- PON TU TOKEN AQUÍ
+    const endpoint = 'https://api.evogb.org/api/cdn/upload'
+    // ----------------------------
 
-const idBot = client.user.id.split(':')[0] + '@s.whatsapp.net'
-const config = global.db.data.settings[idBot]
+    if (value.startsWith('http')) {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-upload-token': token },
+        body: JSON.stringify({ url: value })
+      })
+      const data = await res.json()
+      config.banner = data.result?.url || data.url || value
+      return m.reply(`✿ Se ha actualizado el banner de *${config.namebot}*!`)
+    }
 
-const isOwner2 = [
-idBot,
-...(config.owner ? [config.owner] : []),
-...global.owner.map(num=>num+'@s.whatsapp.net')
-].includes(m.sender)
+    const q = m.quoted ? m.quoted : m.message.imageMessage ? m : m
+    const mime = (q.msg || q).mimetype || q.mediaType || ''
+    if (!/image\/(png|jpe?g|gif)|video\/mp4/.test(mime))
+      return m.reply('✎ Responde a una imagen válida.')
 
-if (!isOwner2) return m.reply(mess.socket)
+    const buffer = await q.download()
+    if (!buffer) return m.reply('✎ No se pudo descargar la imagen.')
 
-const value = args.join(' ').trim()
+    // Uso de la nueva función con la API de Evogb
+    const url = await uploadImage(buffer, mime, token, endpoint)
+    if (!url) return m.reply('✕ Error al subir a la API de Evogb.')
 
-if (!value && !m.quoted && !m.message.imageMessage)
-return m.reply('✎ Responde a una imagen.')
+    config.banner = url
+    return m.reply(`✿ Se ha actualizado el banner de *${config.namebot}*!`)
+  },
+};
 
-if (value.startsWith('http')) {
-config.banner = value
-return m.reply('✿ Banner actualizado.')
-}
+async function uploadImage(buffer, mime, token, endpoint) {
+  try {
+    const body = new FormData()
+    // Según la doc de Evogb, el campo suele ser 'file'
+    body.append('file', buffer, { 
+      filename: `file.${mime.split('/')[1]}`,
+      contentType: mime 
+    })
 
-const q = m.quoted || m
-
-const mime =
-(q.msg || q).mimetype ||
-q.mediaType || ''
-
-const buffer = await q.download()
-
-if (!buffer)
-return m.reply('✕ No se pudo descargar.')
-
-const url = await uploadImage(buffer,mime)
-
-if (!url)
-return m.reply('✕ Evogb rechazó la subida.')
-
-config.banner = url
-
-m.reply(
-`✿ Banner actualizado!\n\n${url}`
-)
-
-}
-}
-
-
-async function uploadImage(buffer,mime){
-
-try{
-
-const form = new FormData()
-
-form.append(
-'files[]',
-buffer,
-{
-filename:'banner.'+mime.split('/')[1]
-}
-)
-
-const res = await fetch(
-'https://evogb.win/api/upload',
-{
-method:'POST',
-body:form,
-headers:form.getHeaders()
-}
-)
-
-// LEER COMO TEXTO, NO COMO JSON
-const text = await res.text()
-
-console.log(text)
-
-// Si devolvió HTML, falló
-if (text.startsWith('<!DOCTYPE'))
-return null
-
-// Intentar parsear manualmente
-const json = JSON.parse(text)
-
-if (!json.success)
-return null
-
-return json.result?.url || null
-
-}catch(e){
-
-console.error(e)
-
-return null
-
-}
+    const res = await fetch(endpoint, { 
+      method: 'POST', 
+      body, 
+      headers: {
+        ...body.getHeaders(),
+        'x-upload-token': token 
+      }
+    })
+    const json = await res.json()
+    return json.result?.url || json.url
+  } catch (e) {
+    console.error(e)
+    return null
+  }
 }

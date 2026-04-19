@@ -2,114 +2,103 @@ import fetch from 'node-fetch'
 import FormData from 'form-data'
 
 export default {
-  command: ['setbanner', 'setbotbanner'],
-  category: 'socket',
+command: ['setbanner','setbotbanner'],
+category: 'socket',
 
-  run: async (client, m, args) => {
+run: async (client,m,args) => {
 
-    const idBot = client.user.id.split(':')[0] + '@s.whatsapp.net'
-    const config = global.db.data.settings[idBot]
+const idBot = client.user.id.split(':')[0] + '@s.whatsapp.net'
+const config = global.db.data.settings[idBot]
 
-    const isOwner2 = [
-      idBot,
-      ...(config.owner ? [config.owner] : []),
-      ...global.owner.map(num => num + '@s.whatsapp.net')
-    ].includes(m.sender)
+const isOwner2 = [
+idBot,
+...(config.owner ? [config.owner] : []),
+...global.owner.map(num=>num+'@s.whatsapp.net')
+].includes(m.sender)
 
-    if (!isOwner2) return m.reply(mess.socket)
+if (!isOwner2) return m.reply(mess.socket)
 
-    const value = args.join(' ').trim()
+const value = args.join(' ').trim()
 
-    if (
-      !value &&
-      !m.quoted &&
-      !m.message.imageMessage &&
-      !m.message.videoMessage
-    ) {
-      return m.reply(
-        '✎ Debes enviar o citar una imagen o video para cambiar el banner.'
-      )
-    }
+if (!value && !m.quoted && !m.message.imageMessage)
+return m.reply('✎ Responde a una imagen.')
 
-    // Si pasan una URL directa
-    if (value.startsWith('http')) {
-      config.banner = value
-      return m.reply(
-        `✿ Se ha actualizado el banner de *${config.namebot}*!`
-      )
-    }
+if (value.startsWith('http')) {
+config.banner = value
+return m.reply('✿ Banner actualizado.')
+}
 
-    // Imagen citada
-    const q = m.quoted || m
+const q = m.quoted || m
 
-    const mime =
-      (q.msg || q).mimetype ||
-      q.mediaType ||
-      ''
+const mime =
+(q.msg || q).mimetype ||
+q.mediaType || ''
 
-    if (!/image\/(png|jpe?g|gif)|video\/mp4/.test(mime)) {
-      return m.reply('✎ Responde a una imagen válida.')
-    }
+const buffer = await q.download()
 
-    const buffer = await q.download()
+if (!buffer)
+return m.reply('✕ No se pudo descargar.')
 
-    if (!buffer) {
-      return m.reply('✕ No se pudo descargar la imagen.')
-    }
+const url = await uploadImage(buffer,mime)
 
-    const url = await uploadImage(buffer, mime)
+if (!url)
+return m.reply('✕ Evogb rechazó la subida.')
 
-    if (!url) {
-      return m.reply('✕ Error subiendo imagen a evogb.')
-    }
+config.banner = url
 
-    config.banner = url
+m.reply(
+`✿ Banner actualizado!\n\n${url}`
+)
 
-    return m.reply(
-      `✿ Banner actualizado correctamente!\n\n${url}`
-    )
-  }
+}
 }
 
 
+async function uploadImage(buffer,mime){
 
-async function uploadImage(buffer, mime) {
+try{
 
-  try {
+const form = new FormData()
 
-    const form = new FormData()
+form.append(
+'files[]',
+buffer,
+{
+filename:'banner.'+mime.split('/')[1]
+}
+)
 
-    // IMPORTANTE: files[] y no file
-    form.append(
-      'files[]',
-      buffer,
-      {
-        filename: 'banner.' + mime.split('/')[1]
-      }
-    )
+const res = await fetch(
+'https://evogb.win/api/upload',
+{
+method:'POST',
+body:form,
+headers:form.getHeaders()
+}
+)
 
-    const res = await fetch(
-      'https://evogb.win/api/upload',
-      {
-        method: 'POST',
-        body: form,
-        headers: form.getHeaders()
-      }
-    )
+// LEER COMO TEXTO, NO COMO JSON
+const text = await res.text()
 
-    const json = await res.json()
+console.log(text)
 
-    console.log(json)
+// Si devolvió HTML, falló
+if (text.startsWith('<!DOCTYPE'))
+return null
 
-    if (!json.success) return null
+// Intentar parsear manualmente
+const json = JSON.parse(text)
 
-    return json.result?.url || null
+if (!json.success)
+return null
 
-  }
-  catch (e) {
+return json.result?.url || null
 
-    console.error(e)
+}catch(e){
 
-    return null
-  }
+console.error(e)
+
+return null
+
+}
 }

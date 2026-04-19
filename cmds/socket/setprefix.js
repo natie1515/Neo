@@ -15,34 +15,29 @@ export default {
 
     if (!value) {
       const lista = config.prefix === null ? '`sin prefijos`' : (Array.isArray(config.prefix) ? config.prefix : [config.prefix || '/']).map(p => `\`${p}\``).join(', ')
-      // Aquí el mensaje sigue sugiriendo solo símbolos, ocultando que acepta letras
-      return m.reply(`❀ Por favor, elige cualquiera de los siguientes métodos de prefijos.\n\n> *○ Only-Prefix* » ${usedPrefix + command} *.*\n> *○ Multi-Prefix* » ${usedPrefix + command} *!/.#*\n> *○ No-Prefix* » ${usedPrefix + command} *noprefix*\n\nꕥ Actualmente se está usando: ${lista}`)
+      return m.reply(`❀ Por favor, elige cualquiera de los siguientes métodos de prefijos.\n\n> *○ Only-Prefix* » ${usedPrefix + command} *.*\n> *○ Multi-Prefix* » ${usedPrefix + command} *! . #*\n> *○ Word-Prefix* » ${usedPrefix + command} *neko*\n\nꕥ Actualmente se está usando: ${lista}`)
     }
 
     if (value.toLowerCase() === 'reset') {
       config.prefix = defaultPrefix
-      return client.reply(m.chat, `❀ Se han restaurado los prefijos predeterminados: *${defaultPrefix.join(' ')}*`, m)
+      return client.reply(m.chat, `❀ Se han restaurado los prefijos predeterminados.`, m)
     }
 
     if (value.toLowerCase() === 'noprefix') {
       config.prefix = true 
-      return m.reply(`❀ Se cambio al modo sin prefijos para el Socket correctamente\n> Ahora el bot responderá a comandos *sin prefijos*.`)
+      return m.reply(`❀ Se cambió al modo sin prefijos.`)
     }
 
-    const splitter = new GraphemeSplitter()
-    const graphemes = splitter.splitGraphemes(value)
-    const lista = []
+    // --- CAMBIO CLAVE AQUÍ ---
+    // En lugar de separar cada letra, separamos por espacios para permitir palabras
+    const lista = value.split(/\s+/).filter(p => p.length > 0)
 
-    for (const g of graphemes) {
-      // Se eliminó el filtro de letras, ahora acepta TODO
-      if (!lista.includes(g)) lista.push(g)
-    }
-
-    // El mensaje de error dice "símbolo o emoji" para despistar, pero aceptará letras si las pones
-    if (lista.length === 0) return client.reply(m.chat, 'ꕥ No se detectaron prefijos válidos. Debes incluir al menos un símbolo o emoji.', m)
-    if (lista.length > 20) return client.reply(m.chat, 'ꕥ El prefijo es demasiado largo.', m)
+    if (lista.length === 0) return client.reply(m.chat, 'ꕥ No se detectaron prefijos válidos.', m)
+    if (lista.length > 10) return client.reply(m.chat, 'ꕥ Demasiados prefijos permitidos.', m)
 
     config.prefix = lista
-    return client.reply(m.chat, `❀ Se cambió el prefijo del Socket a *${lista.join(' ')}* correctamente.`, m)
+    
+    // El mensaje de confirmación mostrará los prefijos elegidos
+    return client.reply(m.chat, `❀ Se cambió el prefijo del Socket a: *${lista.join(' , ')}* correctamente.`, m)
   },
 }

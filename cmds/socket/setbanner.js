@@ -2,7 +2,7 @@ import fetch from 'node-fetch';
 import FormData from 'form-data';
 
 export default {
-  command: ['setbanner', 'setmenubanner'],
+  command: ['setbanner', 'setbotbanner'],
   category: 'socket',
   run: async (client, m, args) => {
     const idBot = client.user.id.split(':')[0] + '@s.whatsapp.net'
@@ -30,11 +30,8 @@ export default {
 
 async function uploadImage(buffer, mime) {
   const body = new FormData()
-  body.append('reqtype', 'fileupload')
-  body.append('fileToUpload', buffer, `file.${mime.split('/')[1]}`)
-  const res = await fetch('https://catbox.moe/user/api.php', { 
-    method: 'POST', 
-    body 
-  })
-  return await res.text()
+  body.append('files[]', buffer, `file.${mime.split('/')[1]}`)
+  const res = await fetch('https://uguu.se/upload.php', { method: 'POST', body, headers: body.getHeaders() })
+  const json = await res.json()
+  return json.files?.[0]?.url
 }

@@ -34,7 +34,7 @@ async function uploadImage(buffer, mime) {
   body.append('server', 'auto')
   body.append('method', 'local')
 
-  const res = await fetch('https://api.evogb.org/tools/upload', { 
+  const res = await fetch('https://evogb.win/api/upload', { 
     method: 'POST', 
     body, 
     headers: body.getHeaders() 

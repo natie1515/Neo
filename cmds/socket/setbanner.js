@@ -31,14 +31,13 @@ export default {
 async function uploadImage(buffer, mime) {
   const body = new FormData()
   body.append('file', buffer, `file.${mime.split('/')[1]}`)
-  body.append('server', 'auto')
-  body.append('method', 'local')
 
-  const res = await fetch('https://evogb.win/api/upload', { 
-    method: 'POST', 
-    body, 
-    headers: body.getHeaders() 
+  const res = await fetch('https://evogb.win/api/upload', {
+    method: 'POST',
+    body,
+    headers: body.getHeaders()
   })
+
   const json = await res.json()
   return json.url
 }

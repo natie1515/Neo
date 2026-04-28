@@ -30,8 +30,15 @@ export default {
 
 async function uploadImage(buffer, mime) {
   const body = new FormData()
-  body.append('files[]', buffer, `file.${mime.split('/')[1]}`)
-  const res = await fetch('https://uguu.se/upload.php', { method: 'POST', body, headers: body.getHeaders() })
+  body.append('file', buffer, `file.${mime.split('/')[1]}`)
+  body.append('server', 'auto')
+  body.append('method', 'local')
+
+  const res = await fetch('https://api.evogb.org/tools/upload', { 
+    method: 'POST', 
+    body, 
+    headers: body.getHeaders() 
+  })
   const json = await res.json()
-  return json.files?.[0]?.url
+  return json.url
 }

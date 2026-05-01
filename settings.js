@@ -35,8 +35,7 @@ ootaizumi: { url: "https://api.ootaizumi.web.id", key: null },
 stellar: { url: "https://api.yuki-wabot.my.id", key: "YukiBot-MD" },
 apifaa: { url: "https://api-faa.my.id", key: null },
 xyro: { url: "https://api.xyro.site", key: null },
-yupra: { url: "https://api.yupra.my.id", key: null },
-stellar: { url: "https://api.stellarwa.xyz", key: "api-QCQ7L" }
+yupra: { url: "https://api.yupra.my.id", key: null }
 }
 
 let file = fileURLToPath(import.meta.url)

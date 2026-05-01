@@ -14,16 +14,6 @@ channel: "https://whatsapp.com/channel/0029Vb64nWqLo4hb8cuxe23n",
 github: "https://github.com/iamDestroy/YukiBot-MD",
 gmail: "thekingdestroy507@gmail.com"
 }
-// No olvides sacar tu apikey de cada api!
-
-global.api = {
-  url: 'https://api.evogb.org',
-  url2: 'https://api.stellarwa.xyz',
-  url3: 'https://sylphyy.xyz',
-  key: 'evogb-bU680FxN', // api.evogb.org
-  key2: 'api-QCQ7L', // api.stellarwa.xyz
-  key3: 'sylphy-56df94' // sylphy.xyz
-}
 global.my = {
 ch: '120363401404146384@newsletter',
 name: 'ೃ࿔ ყµҡเ ωαɓσƭร - σƒƒเ૮เαℓ ૮ɦαɳɳεℓ .ೃ࿐',

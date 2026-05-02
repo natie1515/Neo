@@ -11,7 +11,7 @@ function initDB(m, client) {
   settings.nameid ??= "✦͙͙͙͙❥⃝∗⁎.ʚ ʸᵘᵐᶦ-ᵖʳᵒʸᵉᶜᵗ ɞ.⁎∗❥⃝**͙✦͙͙͙"
   settings.type ??= 'Owner'
   settings.link ??= 'https://api.yuki-wabot.my.id'
-  settings.banner ??= 'https://cdn.nexylight.xyz/files/ud1mg7.jpeg'
+  settings.banner ??= 'https://evogb.win/nekotina.jpeg'
   settings.icon ??= 'https://cdn.nexylight.xyz/files/nxen0rzo.jpeg'
   settings.currency ??= 'Yenes'
   settings.namebot ??= 'Nekotina'

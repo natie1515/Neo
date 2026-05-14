@@ -44,7 +44,7 @@ export default {
         { quoted: m }
       )
 
-      const dlEndpoint = `https://TUAPI.com/dl/youtubeplayv2?query=${encodeURIComponent(text)}&type=mp3&quality=auto&key=TU_KEY_AQUI`
+      const dlEndpoint = `https://TUAPI.com/dl/youtubeplayv2?query=${encodeURIComponent(text)}&type=mp3&quality=auto&key=nekotina`
 
       const resDl = await fetch(dlEndpoint).then(r => r.json())
 

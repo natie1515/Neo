@@ -76,7 +76,7 @@ export default {
 
       // API NUEVA
       const dlEndpoint =
-        `https://TUAPI.com/dl/youtubeplayv2?query=${encodeURIComponent(url)}&type=mp3&quality=auto&key=nekotina`
+        `https://api.stellarwa.xyz/dl/youtubeplayv2?query=${encodeURIComponent(url)}&type=mp3&quality=auto&key=nekotina`
 
       const resDl = await fetch(dlEndpoint).then(r => r.json())
 

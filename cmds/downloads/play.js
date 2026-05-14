@@ -5,7 +5,6 @@ import fetch from 'node-fetch'
 export default {
   command: ['play', 'mp3', 'ytmp3', 'ytaudio', 'playaudio'],
   category: 'downloader',
-
   run: async (sock, m, args) => {
     try {
       if (!args[0]) {
@@ -13,27 +12,15 @@ export default {
       }
 
       const text = args.join(' ')
-
       const searchResult = await ytsearch(text)
-
       if (!searchResult.videos || !searchResult.videos.length) {
         return m.reply('《✧》 No se encontró información del video.')
       }
 
       const video = searchResult.videos[0]
-
-      const {
-        title,
-        author,
-        timestamp: duration,
-        views,
-        url,
-        image
-      } = video
-
+      const { title, author, timestamp: duration, views, url, image } = video
       const vistas = (views || 0).toLocaleString()
       const canal = author?.name || author || 'Desconocido'
-
       const thumbBuffer = await getBuffer(image)
 
       const caption = `➥ Descargando › ${title}
@@ -45,57 +32,22 @@ export default {
 
 𐙚 ❀ ｡ ↻ El archivo se está enviando, espera un momento... ˙𐙚`
 
-      await sock.sendMessage(
-        m.chat,
-        {
-          image: thumbBuffer,
-          caption
-        },
-        { quoted: m }
-      )
+      await sock.sendMessage(m.chat, { image: thumbBuffer, caption }, { quoted: m })
 
-      // API + KEY MANUAL
-      const dlEndpoint = `https://TUAPI.com/dl/youtubeplayv2?query=${encodeURIComponent(url)}&type=mp3&quality=auto&key=TU_KEY_AQUI`
-
-      const controller = new AbortController()
-
-      const timeout = setTimeout(() => {
-        controller.abort()
-      }, 10000)
-
-      const resDl = await fetch(dlEndpoint, {
-        signal: controller.signal
-      }).then(r => r.json())
-
-      clearTimeout(timeout)
-
-      // Detecta distintos formatos de respuesta
-      const audioUrl =
-        resDl?.data?.dl ||
-        resDl?.result?.download ||
-        resDl?.download ||
-        resDl?.url
-
-      if (!audioUrl) {
+      const dlEndpoint = `${api.url}/dl/youtubeplayv2?query=${encodeURIComponent(text)}&type=mp3&quality=auto&key=${api.key}`
+      const resDl = await fetch(dlEndpoint).then(r => r.json())
+      if (!resDl?.status || !resDl.data?.dl) {
         return m.reply('《✧》 No se pudo descargar el *audio*, intenta más tarde.')
       }
 
-      const audioBuffer = await getBuffer(audioUrl)
-
+      const audioBuffer = await getBuffer(resDl.data.dl)
       const mensaje = {
         audio: audioBuffer,
         mimetype: 'audio/mpeg',
-        fileName:
-          resDl?.data?.fileName ||
-          `${title}.mp3`
+        fileName: resDl.data.fileName || `${title}.mp3`
       }
 
-      await sock.sendMessage(
-        m.chat,
-        mensaje,
-        { quoted: m }
-      )
-
+      await sock.sendMessage(m.chat, mensaje, { quoted: m })
     } catch (e) {
       await m.reply(msgglobal + e)
     }

@@ -4,7 +4,7 @@ export default {
   command: ['sp', 'spotify'],
   category: 'downloader',
 
-  run: async (sock, m, args) => {
+  run: async (client, m, args, usedPrefix, command) => {
     try {
       if (!args[0]) {
         return m.reply(
@@ -12,18 +12,18 @@ export default {
         )
       }
 
-      const query = args.join(' ')
+      const text = args.join(' ')
 
       let url
       let songInfo
 
       // DETECTAR LINK DE SPOTIFY
-      if (/open\.spotify\.com\/track\//i.test(query)) {
+      if (/open\.spotify\.com\/track\//i.test(text)) {
 
-        url = query
+        url = text
 
         const resInfo = await fetch(
-          `https://TUAPI.com/dl/spotify?url=${encodeURIComponent(url)}&key=TU_KEY_AQUI`
+          `https://api.stellarwa.xyz/dl/spotify?url=${encodeURIComponent(url)}&key=nekotina`
         )
 
         const resultInfo = await resInfo.json()
@@ -36,9 +36,9 @@ export default {
 
       } else {
 
-        // BUSCADOR SPOTIFY
+        // BUSCADOR
         const search = await fetch(
-          `https://api.stellarwa.xyz/search/spotify?query=${encodeURIComponent(query)}&key=nekotina`
+          `https://TUAPI.com/search/spotify?query=${encodeURIComponent(text)}&key=TU_KEY_AQUI`
         )
 
         const data = await search.json()
@@ -66,12 +66,12 @@ export default {
 
 𐙚 ❀ ｡ ↻ El archivo se está enviando, espera un momento... ˙𐙚`
 
-      const yi = songInfo.image || songInfo.cover
+      const imageUrl = songInfo.image || songInfo.cover
 
-      await sock.sendMessage(
+      await client.sendMessage(
         m.chat,
         {
-          image: { url: yi },
+          image: { url: imageUrl },
           caption
         },
         { quoted: m }
@@ -79,7 +79,7 @@ export default {
 
       // DESCARGAR AUDIO
       const resAudio = await fetch(
-        `https://TUAPI.com/dl/spotify?url=${encodeURIComponent(url)}&key=TU_KEY_AQUI`
+        `https://api.stellarwa.xyz/dl/spotify?url=${encodeURIComponent(url)}&key=nekotina`
       )
 
       const resultAudio = await resAudio.json()
@@ -91,28 +91,22 @@ export default {
         resultAudio?.url
 
       if (!audioUrl) {
-        return m.reply('❖ No se pudo descargar el audio de Spotify.')
-      }
-
-      const audioRes = await fetch(audioUrl)
-
-      if (!audioRes.ok) {
-        return m.reply('❖ Error al obtener el archivo de audio.')
+        return m.reply(
+          '❖ No se pudo descargar el audio de Spotify.'
+        )
       }
 
       const audioBuffer = Buffer.from(
-        await audioRes.arrayBuffer()
+        await (await fetch(audioUrl)).arrayBuffer()
       )
 
-      const mensaje = {
-        audio: audioBuffer,
-        mimetype: 'audio/mpeg',
-        fileName: `${songInfo.title || songInfo.name || 'spotify'}.mp3`
-      }
-
-      await sock.sendMessage(
+      await client.sendMessage(
         m.chat,
-        mensaje,
+        {
+          audio: audioBuffer,
+          mimetype: 'audio/mpeg',
+          fileName: `${songInfo.title || songInfo.name || 'spotify'}.mp3`
+        },
         { quoted: m }
       )
 

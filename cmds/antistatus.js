@@ -7,15 +7,17 @@ export default {
       // SOLO GRUPOS
       if (!m.isGroup) return false
 
-      // BASE DE DATOS
-      if (!global.db?.chats?.[m.chat]?.antiStatus) return false
+      // ACTIVADO?
+      if (!global.db?.chats?.[m.chat]?.antiStatus) {
+        return false
+      }
 
-      // OBTENER METADATA
+      // METADATA
       const metadata = await client.groupMetadata(m.chat)
 
       const participants = metadata.participants || []
 
-      // VERIFICAR ADMIN
+      // ES ADMIN?
       const isAdmin = participants.find(
         p =>
           p.id === m.sender &&
@@ -30,22 +32,19 @@ export default {
         return false
       }
 
-      // TEXTO
-      const text =
-        m.text ||
-        m.body ||
-        m.message?.conversation ||
-        m.message?.extendedTextMessage?.text ||
-        ''
+      // DETECTAR ESTADO COMPARTIDO
+      const msg = m.message || {}
 
-      // DETECTAR ESTADOS/CANALES
       const esEstado =
-        text.includes('https://whatsapp.com/channel/') ||
-        text.includes('status@broadcast')
+        msg?.groupStatusMentionMessage ||
+        msg?.statusMentionMessage ||
+        msg?.groupMentionedMessage ||
+        msg?.extendedTextMessage?.contextInfo?.quotedStatus ||
+        msg?.extendedTextMessage?.contextInfo?.remoteJid === 'status@broadcast'
 
       if (!esEstado) return false
 
-      // BORRAR MENSAJE
+      // ELIMINAR
       await client.sendMessage(
         m.chat,
         {
@@ -60,7 +59,7 @@ export default {
           text:
 `🛡️ *ANTI ESTADOS ACTIVADO*
 
-❖ @${m.sender.split('@')[0]} solo los administradores pueden compartir estados o canales en este grupo.`,
+❖ @${m.sender.split('@')[0]} solo los administradores pueden compartir estados en este grupo.`,
           mentions: [m.sender]
         }
       )

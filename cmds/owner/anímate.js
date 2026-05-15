@@ -10,7 +10,6 @@ export default {
 
   run: async (client, m, args) => {
     try {
-
       // VALIDAR OWNER
       const senderNumber = m.sender.split('@')[0]
       const isOwner = senderNumber === OWNER_NUMBER
@@ -38,11 +37,11 @@ export default {
 ╰────────────────⬣`)
       }
 
-      // VALIDAR IMAGEN
+      // VALIDAR IMAGEN (Detección mejorada)
       const q = m.quoted ? m.quoted : m
-      const mime = q.mimetype || ''
+      const mime = (q.msg || q).mimetype || q.mediaType || ''
 
-      if (!mime.startsWith('image/')) {
+      if (!/image/.test(mime)) {
         return m.reply(
           '《✧》 Responde a una imagen para animarla.'
         )
@@ -73,13 +72,12 @@ export default {
 
       if (!imageUrl.startsWith('https://')) {
         return m.reply(
-          '《✧》 Error al subir la imagen.'
+          '《✧》 Error al subir la imagen a Catbox.'
         )
       }
 
       // API IA
-      const apiUrl =
-        `https://api.nekorinn.my.id/ai/img2video?url=${encodeURIComponent(imageUrl)}`
+      const apiUrl = `https://api.nekorinn.my.id/ai/img2video?url=${encodeURIComponent(imageUrl.trim())}`
 
       const res = await fetch(apiUrl)
       const json = await res.json()
@@ -91,7 +89,7 @@ export default {
 
       if (!videoUrl) {
         return m.reply(
-          '《✧》 No se pudo animar la imagen.'
+          '《✧》 No se pudo animar la imagen. La IA no devolvió un video válido.'
         )
       }
 
@@ -100,18 +98,13 @@ export default {
         m.chat,
         {
           video: { url: videoUrl },
-          caption:
-`✦ Imagen animada correctamente con IA 🩷
-
-> ✿ Función exclusiva Premium`
+          caption: `✦ Imagen animada correctamente con IA 🩷\n\n> ✿ Función exclusiva Premium`
         },
         { quoted: m }
       )
 
     } catch (e) {
-
-      console.log(e)
-
+      console.error(e)
       await m.reply(
         `《✧》 Error al ejecutar el comando.\n${e.message}`
       )

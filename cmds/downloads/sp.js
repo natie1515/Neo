@@ -4,7 +4,7 @@ export default {
   command: ['sp', 'spotify'],
   category: 'downloader',
 
-  run: async (client, m, args, usedPrefix, command) => {
+  run: async (client, m, args) => {
     try {
       if (!args[0]) {
         return m.reply(
@@ -17,7 +17,7 @@ export default {
       let url
       let songInfo
 
-      // DETECTAR LINK DE SPOTIFY
+      // DETECTAR LINK
       if (/open\.spotify\.com\/track\//i.test(text)) {
 
         url = text
@@ -29,44 +29,66 @@ export default {
         const resultInfo = await resInfo.json()
 
         if (!resultInfo.status) {
-          return m.reply('❖ No se pudo procesar el enlace de Spotify.')
+          return m.reply(
+            '❖ No se pudo procesar el enlace de Spotify.'
+          )
         }
 
         songInfo = resultInfo.data
 
       } else {
 
-        // BUSCADOR
+        // BUSCAR CANCIÓN
         const search = await fetch(
-          `https://TUAPI.com/search/spotify?query=${encodeURIComponent(text)}&key=TU_KEY_AQUI`
+          `https://api.stellarwa.xyz/search/spotify?query=${encodeURIComponent(text)}&key=nekotina`
         )
 
         const data = await search.json()
 
         if (!data.status || !data.data.length) {
-          return m.reply('❖ No se encontraron resultados en Spotify')
+          return m.reply(
+            '❖ No se encontraron resultados en Spotify'
+          )
         }
 
         songInfo = data.data[0]
         url = songInfo.url
       }
 
+      const titulo =
+        songInfo.title ||
+        songInfo.name ||
+        'Desconocido'
+
+      const artista =
+        songInfo.artist ||
+        'Desconocido'
+
+      const album =
+        songInfo.album ||
+        'Desconocido'
+
+      const fecha =
+        songInfo.publish ||
+        songInfo.year ||
+        'Desconocido'
+
       const duracion =
         (!songInfo.duration || songInfo.duration.includes('NaN'))
           ? 'Desconocida'
-          : songInfo.duration || ''
+          : songInfo.duration
 
-      const caption = `➪ Descargando › ${songInfo.title || songInfo.name}
+      const imageUrl =
+        songInfo.image ||
+        songInfo.cover
 
-> ✿⃘࣪◌ ֪ Artista › ${songInfo.artist || ""}
-> ✿⃘࣪◌ ֪ Álbum › ${songInfo.album || ""}
-> ✿⃘࣪◌ ֪ Fecha › ${songInfo.publish || songInfo.year || ""}
-> ✿⃘࣪◌ ֪ Duración › ${duracion}
-> ✿⃘࣪◌ ֪ Enlace › ${url || ""}
+      const caption = `➩ Descargando › *${titulo}*
 
-𐙚 ❀ ｡ ↻ El archivo se está enviando, espera un momento... ˙𐙚`
-
-      const imageUrl = songInfo.image || songInfo.cover
+> ❖ Artista › *${artista}*
+> ⴵ Álbum › *${album}*
+> ❀ Duración › *${duracion}*
+> ✩ Publicado › *${fecha}*
+> ❒ Enlace › *${url}*`
 
       await client.sendMessage(
         m.chat,
@@ -79,7 +101,7 @@ export default {
 
       // DESCARGAR AUDIO
       const resAudio = await fetch(
-        `https://api.stellarwa.xyz/dl/spotify?url=${encodeURIComponent(url)}&key=nekotina`
+        `https://TUAPI.com/dl/spotify?url=${encodeURIComponent(url)}&key=TU_KEY_AQUI`
       )
 
       const resultAudio = await resAudio.json()
@@ -105,7 +127,7 @@ export default {
         {
           audio: audioBuffer,
           mimetype: 'audio/mpeg',
-          fileName: `${songInfo.title || songInfo.name || 'spotify'}.mp3`
+          fileName: `${titulo}.mp3`
         },
         { quoted: m }
       )

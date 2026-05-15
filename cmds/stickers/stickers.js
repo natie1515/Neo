@@ -32,7 +32,7 @@ const isStickerUrl = (url) => /^(https?:\/\/)?(www\.)?sticker\.ly\/s\/[a-zA-Z0-9
 
 const searchPacks = async (query, attempt = 1) => {
   try {
-    const { data } = await axios.get('https://api.stellarwa.xyz/stickerly/search', { params: { query, key: 'YukiWaBot' }, timeout: 10000 });
+    const { data } = await axios.get('https://api.stellarwa.xyz/stickerly/search', { params: { query, key: 'nekotina' }, timeout: 10000 });
     return data;
   } catch (e) {
     if (e.response?.status === 429 && attempt <= 3) { await delay((e.response.headers['retry-after'] || 5) * 1000); return searchPacks(query, attempt + 1); }
@@ -42,7 +42,7 @@ const searchPacks = async (query, attempt = 1) => {
 
 const downloadPack = async (url, attempt = 1) => {
   try {
-    const { data } = await axios.get('https://api.stellarwa.xyz/stickerly/detail', { params: { url, key: 'YukiWaBot' }, timeout: 10000 });
+    const { data } = await axios.get('https://api.stellarwa.xyz/stickerly/detail', { params: { url, key: 'nekotina' }, timeout: 10000 });
     return data;
   } catch (e) {
     if (e.response?.status === 429 && attempt <= 3) { await delay((e.response.headers['retry-after'] || 5) * 1000); return downloadPack(url, attempt + 1); }
@@ -126,7 +126,7 @@ export default {
         })).then(results => results.filter(r => r !== null))
       ]);
       if (!stickerResults.length) return client.reply(m.chat, `《✧》 No se pudieron procesar los stickers del pack.`, m);
-      await client.sendMessage(m.chat, { stickerPack: { name: packName, publisher: author?.name || author?.username || `@${name}`, description: 'ʏᴜᴋɪ 🧠 Wᴀʙᴏᴛ', cover, stickers: stickerResults } }, { quoted: m });
+      await client.sendMessage(m.chat, { stickerPack: { name: packName, publisher: author?.name || author?.username || `@${name}`, description: 'neko 🧠 Wᴀʙᴏᴛ', cover, stickers: stickerResults } }, { quoted: m });
       await m.react('✔️');
     } catch (e) {
       await m.react('✖️');

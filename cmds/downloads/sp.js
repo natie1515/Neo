@@ -101,7 +101,7 @@ export default {
 
       // DESCARGAR AUDIO
       const resAudio = await fetch(
-        `https://TUAPI.com/dl/spotify?url=${encodeURIComponent(url)}&key=TU_KEY_AQUI`
+        `https://api.stellarwa.xyz/dl/spotify?url=${encodeURIComponent(url)}&key=nekotina`
       )
 
       const resultAudio = await resAudio.json()

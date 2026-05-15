@@ -10,6 +10,7 @@ export default {
 
   run: async (client, m, args) => {
     try {
+
       // VALIDAR OWNER
       const senderNumber = m.sender.split('@')[0]
       const isOwner = senderNumber === OWNER_NUMBER
@@ -37,54 +38,56 @@ export default {
 ╰────────────────⬣`)
       }
 
-      // VALIDAR IMAGEN (Detección mejorada para evitar bucles)
+      // VALIDAR IMAGEN
       const q = m.quoted ? m.quoted : m
       const mime = (q.msg || q).mimetype || q.mediaType || ''
 
       if (!/image/.test(mime)) {
-        return m.reply('《✧》 Responde a una imagen para animarla.')
+        return m.reply(
+          '《✧》 Responde a una imagen para animarla.'
+        )
       }
 
-      await m.reply('𐙚 ❀ ｡ La IA está animando la imagen, espera un momento...')
+      await m.reply(
+        '𐙚 ❀ ｡ La IA está animando la imagen, espera un momento...'
+      )
 
       // DESCARGAR IMAGEN
-      const media = await q.download()
+      const buffer = await q.download()
 
-      // SUBIR A CATBOX (Versión corregida con Headers y Formato)
-      const form = new FormData()
-      form.append('reqtype', 'fileupload')
-      form.append('fileToUpload', media, {
-        filename: 'image.jpg',
-        contentType: 'image/jpeg'
-      })
-
-      const upload = await fetch('https://catbox.moe/user/api.php', {
-        method: 'POST',
-        body: form,
-        headers: {
-          ...form.getHeaders(),
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
-        }
-      })
-
-      let imageUrl = await upload.text()
-      imageUrl = imageUrl.trim()
-
-      if (!imageUrl.startsWith('https://')) {
-        console.error('Error Catbox:', imageUrl)
-        return m.reply(`《✧》 Error al subir la imagen.\nDetalle: ${imageUrl.slice(0, 50)}`)
+      if (!buffer) {
+        return m.reply(
+          '《✧》 No se pudo descargar la imagen.'
+        )
       }
 
-      // API IA (Nekorinn)
-      const apiUrl = `https://api.nekorinn.my.id/ai/img2video?url=${encodeURIComponent(imageUrl)}`
+      // SUBIR IMAGEN A UGUU
+      const imageUrl = await uploadImage(buffer, mime)
+
+      if (!imageUrl) {
+        return m.reply(
+          '《✧》 Error al subir la imagen.'
+        )
+      }
+
+      // API IA
+      const apiUrl =
+        `https://api.nekorinn.my.id/ai/img2video?url=${encodeURIComponent(imageUrl)}`
 
       const res = await fetch(apiUrl)
       const json = await res.json()
 
-      const videoUrl = json?.result?.video || json?.result?.url || json?.url
+      const videoUrl =
+        json?.result?.video ||
+        json?.result?.url ||
+        json?.url
 
       if (!videoUrl) {
-        return m.reply('《✧》 La IA no pudo procesar esta imagen en particular.')
+        console.log(json)
+
+        return m.reply(
+          '《✧》 La IA no pudo procesar esta imagen.'
+        )
       }
 
       // ENVIAR VIDEO
@@ -92,14 +95,46 @@ export default {
         m.chat,
         {
           video: { url: videoUrl },
-          caption: `✦ Imagen animada correctamente con IA 🩷\n\n> ✿ Función exclusiva Premium`
+          caption:
+`✦ Imagen animada correctamente con IA 🩷
+
+> ✿ Función exclusiva Premium`
         },
         { quoted: m }
       )
 
     } catch (e) {
+
       console.error(e)
-      await m.reply(`《✧》 Error crítico al ejecutar el comando.\n${e.message}`)
+
+      await m.reply(
+        `《✧》 Error crítico al ejecutar el comando.\n${e.message}`
+      )
     }
   }
+}
+
+// SUBIDA UGUU
+async function uploadImage(buffer, mime) {
+
+  const body = new FormData()
+
+  body.append(
+    'files[]',
+    buffer,
+    `file.${mime.split('/')[1] || 'jpg'}`
+  )
+
+  const res = await fetch(
+    'https://uguu.se/upload.php',
+    {
+      method: 'POST',
+      body,
+      headers: body.getHeaders()
+    }
+  )
+
+  const json = await res.json()
+
+  return json.files?.[0]?.url
 }

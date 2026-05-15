@@ -1,4 +1,4 @@
-Import fetch from 'node-fetch'
+import fetch from 'node-fetch'
 
 export default {
   command: ['waifu', 'neko'],
@@ -7,16 +7,11 @@ export default {
     try {
       await m.react('🕒')
       let mode = db.data.chats[m.chat]?.nsfw ? 'nsfw' : 'sfw'
-      // Se cambió a la API funcional de nekos.best manteniendo la estructura de mode y command
       let res = await fetch(`https://nekos.best/api/v2/${command}`)
       if (!res.ok) return
       let json = await res.json()
-      
-      // La API de nekos.best devuelve un array en la propiedad 'results'
-      let imageUrl = json.results?.[0]?.url
-      if (!imageUrl) return
-      
-      let img = Buffer.from(await (await fetch(imageUrl)).arrayBuffer())
+      if (!json.results[0].url) return
+      let img = Buffer.from(await (await fetch(json.results[0].url)).arrayBuffer())
       await client.sendFile(m.chat, img, 'thumbnail.jpg', `ꕥ Aquí tienes tu *${command.toUpperCase()}* ฅ^•ﻌ•^ฅ`, m)
       await m.react('✔️')
     } catch (e) {

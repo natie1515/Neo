@@ -23,7 +23,7 @@ export default {
         url = query
 
         const resInfo = await fetch(
-          `https://api.stellarwa.xyz/dl/spotify?url=${encodeURIComponent(url)}&key=nekotina`
+          `https://TUAPI.com/dl/spotify?url=${encodeURIComponent(url)}&key=TU_KEY_AQUI`
         )
 
         const resultInfo = await resInfo.json()
@@ -38,7 +38,7 @@ export default {
 
         // BUSCADOR SPOTIFY
         const search = await fetch(
-          `https://TUAPI.com/search/spotify?query=${encodeURIComponent(query)}&key=TU_KEY_AQUI`
+          `https://api.stellarwa.xyz/search/spotify?query=${encodeURIComponent(query)}&key=nekotina`
         )
 
         const data = await search.json()
@@ -117,7 +117,9 @@ export default {
       )
 
     } catch (e) {
-      await m.reply(msgglobal)
+      await m.reply(
+        `《✧》 Error al ejecutar el comando.\n${e.message}`
+      )
     }
   }
 }

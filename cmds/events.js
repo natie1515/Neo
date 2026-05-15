@@ -3,7 +3,6 @@ let WAMessageStubType = (await import('@whiskeysockets/baileys')).default
 import chalk from 'chalk'
 
 export default async (client, m) => {
-
   client.ev.on('group-participants.update', async (anu) => {
     try {
       const metadata = await client.groupMetadata(anu.id).catch(() => null)
@@ -13,40 +12,12 @@ export default async (client, m) => {
       const primaryBotId = chat?.primaryBot
       const memberCount = metadata.participants.length      
       const isSelf = global.db.data.settings[botId]?.self ?? false
-
       if (isSelf) return
-
       for (const p of anu.participants) {
-
         const jid = p.phoneNumber
         const phone = p.phoneNumber?.split('@')[0] || jid.split('@')[0]
-
-        const pp = await client.profilePictureUrl(jid, 'image')
-          .catch(_ => 'https://cdn.yuki-wabot.my.id/files/2PVh.jpeg')
-
-        const mensajes = {
-          add: chat.sWelcome
-            ? `\n┊➤ ${chat.sWelcome
-              .replace(/{usuario}/g, `@${phone}`)
-              .replace(/{grupo}/g, `*${metadata.subject}*`)
-              .replace(/{desc}/g, metadata?.desc || '✿ Sin Desc ✿')}`
-            : '',
-
-          remove: chat.sGoodbye
-            ? `\n┊➤ ${chat.sGoodbye
-              .replace(/{usuario}/g, `@${phone}`)
-              .replace(/{grupo}/g, `*${metadata.subject}*`)
-              .replace(/{desc}/g, metadata?.desc || '✿ Sin Desc ✿')}`
-            : '',
-
-          leave: chat.sGoodbye
-            ? `\n┊➤ ${chat.sGoodbye
-              .replace(/{usuario}/g, `@${phone}`)
-              .replace(/{grupo}/g, `*${metadata.subject}*`)
-              .replace(/{desc}/g, metadata?.desc || '✿ Sin Desc ✿')}`
-            : ''
-        }
-
+        const pp = await client.profilePictureUrl(jid, 'image').catch(_ => 'https://cdn.yuki-wabot.my.id/files/2PVh.jpeg')       
+        const mensajes = { add: chat.sWelcome ? `\n┊➤ ${chat.sWelcome.replace(/{usuario}/g, `@${phone}`).replace(/{grupo}/g, `*${metadata.subject}*`).replace(/{desc}/g, metadata?.desc || '✿ Sin Desc ✿')}` : '', remove: chat.sGoodbye ? `\n┊➤ ${chat.sGoodbye.replace(/{usuario}/g, `@${phone}`).replace(/{grupo}/g, `*${metadata.subject}*`).replace(/{desc}/g, metadata?.desc || '✿ Sin Desc ✿')}` : '', leave: chat.sGoodbye ? `\n┊➤ ${chat.sGoodbye.replace(/{usuario}/g, `@${phone}`).replace(/{grupo}/g, `*${metadata.subject}*`).replace(/{desc}/g, metadata?.desc || '✿ Sin Desc ✿')}` : '' }
         const fakeContext = {
           contextInfo: {
             isForwarded: true,
@@ -69,9 +40,7 @@ export default async (client, m) => {
             mentionedJid: [jid]
           }
         }
-
         if (anu.action === 'add' && chat?.welcome && (!primaryBotId || primaryBotId === botId)) {
-
           const caption = `╭┈──̇─̇─̇────̇─̇─̇──◯◝
 ┊「 *Bienvenido (⁠ ⁠ꈍ⁠ᴗ⁠ꈍ⁠)* 」
 ┊︶︶︶︶︶︶︶︶︶︶︶
@@ -82,19 +51,9 @@ export default async (client, m) => {
 ┊➤ *Ahora somos ${memberCount} miembros.* ${mensajes[anu.action]}
 ┊ ︿︿︿︿︿︿︿︿︿︿︿
 ╰─────────────────╯`
-
-          await client.sendMessage(
-            anu.id,
-            {
-              image: { url: pp },
-              caption,
-              ...fakeContext
-            }
-          )
+         await client.sendMessage(anu.id, { image: { url: pp }, caption, ...fakeContext })     
         }
-
         if ((anu.action === 'remove' || anu.action === 'leave') && chat?.goodbye && (!primaryBotId || primaryBotId === botId)) {
-
           const caption = `╭┈──̇─̇─̇────̇─̇─̇──◯◝
 ┊「 *Hasta pronto (⁠╥⁠﹏⁠╥⁠)* 」
 ┊︶︶︶︶︶︶︶︶︶︶︶
@@ -105,169 +64,52 @@ export default async (client, m) => {
 ┊➤ *Ahora somos ${memberCount} miembros.* ${mensajes[anu.action]}
 ┊ ︿︿︿︿︿︿︿︿︿︿︿
 ╰─────────────────╯`
-
-          await client.sendMessage(
-            anu.id,
-            {
-              image: { url: pp },
-              caption,
-              ...fakeContext
-            }
-          )
+          await client.sendMessage(anu.id, { image: { url: pp }, caption, ...fakeContext })
         }
-
         if (anu.action === 'promote' && chat?.alerts && (!primaryBotId || primaryBotId === botId)) {
           const usuario = anu.author
-
-          await client.sendMessage(anu.id, {
-            text: `「✎」 *@${phone}* ha sido promovido a Administrador por *@${usuario.split('@')[0]}.*`,
-            mentions: [jid, usuario, ...groupAdmins.map(v => v.id)]
-          })
+          await client.sendMessage(anu.id, { text: `「✎」 *@${phone}* ha sido promovido a Administrador por *@${usuario.split('@')[0]}.*`, mentions: [jid, usuario, ...groupAdmins.map(v => v.id)] })
         }
-
         if (anu.action === 'demote' && chat?.alerts && (!primaryBotId || primaryBotId === botId)) {
           const usuario = anu.author
-
-          await client.sendMessage(anu.id, {
-            text: `「✎」 *@${phone}* ha sido degradado de Administrador por *@${usuario.split('@')[0]}.*`,
-            mentions: [jid, usuario, ...groupAdmins.map(v => v.id)]
-          })
+          await client.sendMessage(anu.id, { text: `「✎」 *@${phone}* ha sido degradado de Administrador por *@${usuario.split('@')[0]}.*`, mentions: [jid, usuario, ...groupAdmins.map(v => v.id)] })
         }
       }
-
     } catch (err) {
       console.log(chalk.gray(`[ BOT  ]  → ${err}`))
     }
   })
-
   client.ev.on('messages.upsert', async ({ messages }) => {
-    try {
-
-      const mek = messages[0]
-      if (!mek.message) return
-
-      const id = mek.key.remoteJid
-      if (!id.endsWith('@g.us')) return
-
-      const chat = global.db.data.chats[id]
-      if (!chat) return
-
-      const botId = client.user.id.split(':')[0] + '@s.whatsapp.net'
-      const primaryBotId = chat?.primaryBot
-
-      if (primaryBotId && primaryBotId !== botId) return
-
-      const isSelf = global.db.data.settings[botId]?.self ?? false
-      if (isSelf) return
-
-      // =========================
-      // ANTI ESTADOS COMPARTIDOS
-      // =========================
-      if (chat.antistatus) {
-
-        const participant = mek.key.participant || mek.participant || ''
-        const metadata = await client.groupMetadata(id).catch(() => null)
-
-        const isAdmin = metadata?.participants
-          ?.find(p => p.id === participant)?.admin
-
-        const msg =
-          mek.message?.extendedTextMessage ||
-          mek.message?.imageMessage ||
-          mek.message?.videoMessage
-
-        const context = msg?.contextInfo
-
-        const isStatusMention =
-          context?.isForwarded &&
-          (
-            context?.forwardedNewsletterMessageInfo ||
-            context?.quotedMessage
-          ) &&
-          (
-            msg?.text?.includes('estado') ||
-            msg?.caption?.includes('estado') ||
-            msg?.text?.includes('@') ||
-            msg?.caption?.includes('@')
-          )
-
-        if (isStatusMention && !isAdmin) {
-
-          await client.sendMessage(id, {
-            text: `⚠️ @${participant.split('@')[0]} los estados compartidos no están permitidos para miembros normales.`,
-            mentions: [participant]
-          })
-
-          await client.sendMessage(id, {
-            delete: mek.key
-          })
-
-          return
-        }
-      }
-
-      // =========================
-      // ALERTAS DEL GRUPO
-      // =========================
-      if (!mek.messageStubType) return
-      if (!chat?.alerts) return
-
-      const actor = mek.key?.participant || mek.participant || mek.key?.remoteJid
-      const phone = actor.split('@')[0]
-
-      const groupMetadata = await client.groupMetadata(id).catch(() => null)
-
-      const groupAdmins = groupMetadata?.participants.filter(
-        p => (p.admin === 'admin' || p.admin === 'superadmin')
-      ) || []
-
-      if (mek.messageStubType == 21) {
-        await client.sendMessage(id, {
-          text: `「✎」 @${phone} cambió el nombre del grupo a *${mek.messageStubParameters[0]}*`,
-          mentions: [actor, ...groupAdmins.map(v => v.id)]
-        })
-      }
-
-      if (mek.messageStubType == 22) {
-        await client.sendMessage(id, {
-          text: `「✎」 @${phone} cambió el icono del grupo.`,
-          mentions: [actor, ...groupAdmins.map(v => v.id)]
-        })
-      }
-
-      if (mek.messageStubType == 23) {
-        await client.sendMessage(id, {
-          text: `「✎」 @${phone} restableció el enlace del grupo.`,
-          mentions: [actor, ...groupAdmins.map(v => v.id)]
-        })
-      }
-
-      if (mek.messageStubType == 24) {
-        await client.sendMessage(id, {
-          text: `「✎」 @${phone} cambió la descripción del grupo.`,
-          mentions: [actor, ...groupAdmins.map(v => v.id)]
-        })
-      }
-
-      if (mek.messageStubType == 25) {
-        await client.sendMessage(id, {
-          text: `「✎」 @${phone} cambió los ajustes del grupo para permitir que ${mek.messageStubParameters[0] == 'on' ? 'solo admins' : 'todos'} puedan configurar el grupo.`,
-          mentions: [actor, ...groupAdmins.map(v => v.id)]
-        })
-      }
-
-      if (mek.messageStubType == 26) {
-        await client.sendMessage(id, {
-          text: `「✎」 @${phone} cambió los ajustes del grupo para permitir que ${mek.messageStubParameters[0] === 'on'
-            ? 'solo los administradores puedan enviar mensajes al grupo.'
-            : 'todos los miembros puedan enviar mensajes al grupo.'
-          }`,
-          mentions: [actor, ...groupAdmins.map(v => v.id)]
-        })
-      }
-
-    } catch (err) {
-      console.log(chalk.gray(`[ BOT ] → ${err}`))
-    }
-  })
+  const m = messages[0]
+  if (!m.messageStubType) return
+  const id = m.key.remoteJid
+  const chat = global.db.data.chats[id]
+  const botId = client.user.id.split(':')[0] + '@s.whatsapp.net'
+  const primaryBotId = chat?.primaryBot
+  if (!chat?.alerts || (primaryBotId && primaryBotId !== botId)) return
+  const isSelf = global.db.data.settings[botId]?.self ?? false
+  if (isSelf) return
+  const actor = m.key?.participant || m.participant || m.key?.remoteJid
+  const phone = actor.split('@')[0]
+  const groupMetadata = await client.groupMetadata(id).catch(() => null)
+  const groupAdmins = groupMetadata?.participants.filter(p => (p.admin === 'admin' || p.admin === 'superadmin')) || []
+  if (m.messageStubType == 21) {
+    await client.sendMessage(id, { text: `「✎」 @${phone} cambió el nombre del grupo a *${m.messageStubParameters[0]}*`, mentions: [actor, ...groupAdmins.map(v => v.id)] })
+  }
+  if (m.messageStubType == 22) {
+    await client.sendMessage(id, { text: `「✎」 @${phone} cambió el icono del grupo.`, mentions: [actor, ...groupAdmins.map(v => v.id)] })
+  }
+  if (m.messageStubType == 23) {
+    await client.sendMessage(id, { text: `「✎」 @${phone} restableció el enlace del grupo.`, mentions: [actor, ...groupAdmins.map(v => v.id)] })
+  }
+  if (m.messageStubType == 24) {
+    await client.sendMessage(id, { text: `「✎」 @${phone} cambió la descripción del grupo.`, mentions: [actor, ...groupAdmins.map(v => v.id)] })
+  }
+  if (m.messageStubType == 25) {
+    await client.sendMessage(id, { text: `「✎」 @${phone} cambió los ajustes del grupo para permitir que ${m.messageStubParameters[0] == 'on' ? 'solo admins' : 'todos'} puedan configurar el grupo.`, mentions: [actor, ...groupAdmins.map(v => v.id)] })
+  }
+  if (m.messageStubType == 26) {
+    await client.sendMessage(id, { text: `「✎」 @${phone} cambió los ajustes del grupo para permitir que ${m.messageStubParameters[0] === 'on' ? 'solo los administradores puedan enviar mensajes al grupo.' : 'todos los miembros puedan enviar mensajes al grupo.'}`, mentions: [actor, ...groupAdmins.map(v => v.id)] })
+  }
+})
 }

@@ -28,7 +28,7 @@ export default {
         )
       }
 
-      // VERIFICAR WHATSAPP
+      // VERIFICAR SI EXISTE EN WHATSAPP
       const check = await client.onWhatsApp(numero)
 
       if (!check || !check[0]?.exists) {
@@ -39,7 +39,7 @@ export default {
 
       const jid = check[0].jid
 
-      // ENVIAR MENSAJE
+      // ENVIAR MENSAJE AL PRIVADO
       await client.sendMessage(
         jid,
         {
@@ -47,8 +47,20 @@ export default {
         }
       )
 
-      await m.reply(
-        `❀ Mensaje enviado correctamente.\n> ✦ Destino › ${numero}`
+      // ELIMINAR EL COMANDO DEL CHAT
+      try {
+        await m.delete()
+      } catch {}
+
+      // CONFIRMACIÓN SOLO PARA TI
+      await client.sendMessage(
+        m.chat,
+        {
+          text: `❀ Mensaje enviado correctamente.\n> ✦ Destino › ${numero}`
+        },
+        {
+          quoted: m
+        }
       )
 
     } catch (e) {

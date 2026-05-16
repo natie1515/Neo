@@ -1,4 +1,4 @@
-Import fetch from 'node-fetch';
+import fetch from 'node-fetch';
 import { getDevice } from '@whiskeysockets/baileys';
 import fs from 'fs';
 import axios from 'axios';
@@ -99,7 +99,7 @@ export default {
               },
               externalAdReply: {
                 title: botname,
-                body: `${namebot}, mᥲძᥱ ᥕі𝗍һ ᑲᥡ ᑲᥡ ⁱᵃᵐ|𝔐ĭω𝐚𒆜`,
+                body: `${namebot}, mᥲძᥱ ᥕі𝗍һ ᑲᥡ ⁱᵃᵐ|𝔐ĭω𝐚𒆜`,
                 showAdAttribution: false,
                 thumbnailUrl: banner,
                 mediaType: 1,
@@ -120,4 +120,4 @@ function formatearMs(ms) {
   const horas = Math.floor(minutos / 60);
   const dias = Math.floor(horas / 24);
   return [dias && `${dias}d`, `${horas % 24}h`, `${minutos % 60}m`, `${segundos % 60}s`].filter(Boolean).join(" ");
-}
+                }

@@ -74,40 +74,45 @@ export default {
       for (const [key, value] of Object.entries(replacements)) {
         menu = menu.replace(new RegExp(`\\${key}`, 'g'), value);
       }
-        await client.sendMessage(m.chat, banner.includes('.mp4') || banner.includes('.webm') ? {
-            video: { url: banner },
-            gifPlayback: true,
-            caption: menu,
-            contextInfo: {
-              mentionedJid: [m.sender],
-              isForwarded: true,
-              forwardedNewsletterMessageInfo: {
-                newsletterJid: canalId,
-                serverMessageId: '',
-                newsletterName: canalName
-              }
+
+      // Preparar metadata base del canal de forma segura
+      const canalContext = canalId ? {
+        newsletterJid: canalId,
+        serverMessageId: 100, // No dejar vacío '', poner un número inicial seguro
+        newsletterName: canalName || botname
+      } : null;
+
+      if (banner.includes('.mp4') || banner.includes('.webm')) {
+        await client.sendMessage(m.chat, {
+          video: { url: banner },
+          gifPlayback: true,
+          caption: menu,
+          contextInfo: {
+            mentionedJid: [m.sender],
+            isForwarded: true,
+            ...(canalContext && { forwardedNewsletterMessageInfo: canalContext })
+          }
+        }, { quoted: m });
+      } else {
+        await client.sendMessage(m.chat, {
+          text: menu,
+          contextInfo: {
+            mentionedJid: [m.sender],
+            isForwarded: true,
+            ...(canalContext && { forwardedNewsletterMessageInfo: canalContext }),
+            externalAdReply: {
+              title: botname,
+              body: `${namebot}, mᥲძᥱ ᥕі𝗍һ ᑲᥡ ᑲᥡ ⁱᵃᵐ|𝔐ĭω𝐚𒆜`,
+              showAdAttribution: false,
+              // Evitamos colapsar el preview si banner es inválido para externalAdReply
+              thumbnailUrl: banner.startsWith('http') ? banner : undefined,
+              mediaType: 1,
+              previewType: 0,
+              renderLargerThumbnail: true
             }
-          } : {
-            text: menu,
-            contextInfo: {
-              mentionedJid: [m.sender],
-              isForwarded: true,
-              forwardedNewsletterMessageInfo: {
-                newsletterJid: canalId,
-                serverMessageId: '',
-                newsletterName: canalName
-              },
-              externalAdReply: {
-                title: botname,
-                body: `${namebot}, mᥲძᥱ ᥕі𝗍һ ᑲᥡ ᑲᥡ ⁱᵃᵐ|𝔐ĭω𝐚𒆜`,
-                showAdAttribution: false,
-                thumbnailUrl: banner,
-                mediaType: 1,
-                previewType: 0,
-                renderLargerThumbnail: true
-              }
-            }
-          }, { quoted: m });
+          }
+        }, { quoted: m });
+      }
     } catch (e) {
       await m.reply(`> An unexpected error occurred while executing command *${usedPrefix + command}*. Please try again or contact support if the issue persists.\n> [Error: *${e.message}*]`)
     }
